@@ -1,0 +1,902 @@
+//!
+Names Default to Here(1);
+Here:DataList = {};
+Here:TabButtonList = {};
+Here:TabCodeList = {};
+Here:TabAfterCodeList = {};
+Here:TabOpenList = {};
+Here:ActionButtonList = {{}};
+Here:ActionCodeList = {{}};
+Here:ActionButtonDesc = {};
+Here:ActionButtonsperRow = {};
+ArryIndex = 1;
+Here:adata1 = open("C:\Users\sedge4\Documents\stressed larvae JMP\salinity\Probe analysis\ANOVA\ANOVA trt and col\probe_norm_larvae_sal_amr.sas7bdat",invisible);
+outdsname = "probe_norm_larvae_sal_amr";
+ 
+/*---specified NegLog10p-value cutoff---*/
+jg:cutoff = 2.5;
+/*---window frame size and position offset---*/
+fsize = 180;
+ppfsize = 180;
+vfsize = 240;
+ 
+ 
+current data table(Here:adata1);
+ 
+include("$LS_HOME\Generator\DialogHelperFunctions.jsl");
+Here:ve=Function({}, {default local},
+If(IsEmpty(Here:adata1),
+	Here:adata1 = open("C:\Users\sedge4\Documents\stressed larvae JMP\salinity\Probe analysis\ANOVA\ANOVA trt and col\probe_norm_larvae_sal_amr.sas7bdat",invisible);
+);
+current data table(Here:adata1);
+   VListBox(
+      HListBox(
+         Distribution(
+            Continuous Distribution(Column( :Variance_Residual)),
+            Continuous Distribution(Column( :RSquare))
+         )
+      ),
+      HListBox(
+         Multivariate(Y( :Variance_Residual, :RSquare ), Scatterplot Matrix(Density Ellipses(1),
+            Ellipse Color(3))
+         )
+      )
+   )
+);
+ 
+column("_Row") << label(1);
+// -------------------------------------------------------------
+// Build expressions for web searching.
+// -------------------------------------------------------------
+ 
+ucsc_expr = expr(
+   if(!isEmpty(adata1), 
+      current Data Table(adata1);
+   );
+   cdt = currentDataTable();
+   if (nrow(cdt<<getSelectedRows)>0,
+      ucscdt = cdt << Subset(Output Table("ucsc_subset"), Linked, Selected rows);
+      outpath = "C:\Users\sedge4\Documents\stressed larvae JMP\salinity\Probe analysis\ANOVA\ANOVA trt and col\";
+      ucscdt << Save(outpath||"ucsc_subset.sas7bdat",SAS);
+      Close(ucscdt);
+      if(host is(Windows),
+         Include(ConvertFilePath("$HOME/JMPG/ProcessLibrary/CreateWebLink_UCSC.jsl", absolute, windows)),
+         Include(ConvertFilePath("$HOME/JMPG/ProcessLibrary/CreateWebLink_UCSC.jsl", absolute, POSIX));
+      );
+      jg:setCurrentParmValue(2,"CreateWebLink_UCSC", jg:getParmNum("CreateWebLink_UCSC","InData"),"C:\Users\sedge4\Documents\stressed larvae JMP\salinity\Probe analysis\ANOVA\ANOVA trt and col\ucsc_subset.sas7bdat");
+      jg:CreateWebLink_UCSC_updateDeps;
+      jg:setCurrentParmValue(2,"CreateWebLink_UCSC", jg:getParmNum("CreateWebLink_UCSC","OutPath"),"C:\Users\sedge4\Documents\stressed larvae JMP\salinity\Probe analysis\ANOVA\ANOVA trt and col\"),
+      dialog( title(" Warning"), vlist( " ", " No rows have been selected.",
+         " ", " The subset file was not generated.", " ", " ",
+         HList("              ", button("OK"))
+      ));
+   );
+);
+ 
+ipa_expr = expr(
+   if(!isEmpty(adata1), 
+      current Data Table(adata1);
+   );
+   cdt = currentDataTable();
+   if (nrow(cdt<<getSelectedRows)>0,
+      ipadt = cdt << Subset(Output Table("ipa_subset"), Linked, Selected rows);
+      outpath = "C:\Users\sedge4\Documents\stressed larvae JMP\salinity\Probe analysis\ANOVA\ANOVA trt and col\";
+      ipadt << Save(outpath||"ipa_subset.sas7bdat",SAS);
+      Close(ipadt);
+      if(host is(Windows),
+         Include(ConvertFilePath("$HOME/JMPLS/ProcessLibrary/IPAUploadFile.jsl", absolute, windows)),
+         Include(ConvertFilePath("$HOME/JMPLS/ProcessLibrary/IPAUploadFile.jsl", absolute, POSIX));
+      );
+      jg:setCurrentParmValue(1,"IPAUploadFile", jg:getParmNum("IPAUploadFile","InData"),"C:\Users\sedge4\Documents\stressed larvae JMP\salinity\Probe analysis\ANOVA\ANOVA trt and col\ipa_subset.sas7bdat");
+      jg:IPAUploadFile_updateDeps;
+      jg:setCurrentParmValue(1,"IPAUploadFile", jg:getParmNum("IPAUploadFile","OutPath"),"C:\Users\sedge4\Documents\stressed larvae JMP\salinity\Probe analysis\ANOVA\ANOVA trt and col\"),
+      dialog( title(" Warning"), vlist( " ", " No rows have been selected.",
+         " ", " The subset file was not generated.", " ", " ",
+         HList("              ", button("OK"))
+      ));
+   );
+);
+ 
+// ----------------------------------------------------------------------
+// Constants for web search include URL string, file path, and html tag. 
+// ----------------------------------------------------------------------
+ 
+path="C:\Users\sedge4\Documents\stressed larvae JMP\salinity\Probe analysis\ANOVA\ANOVA trt and col\";
+summary_url = path || "summary.html";
+genbank_url = "http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?cmd=search&db=Nucleotide&doptcmdl=GenBank&term=";
+sgd_url = "http://db.yeastgenome.org/cgi-bin/locus.pl?locus=";
+unigene_url = "http://www.ncbi.nlm.nih.gov/UniGene/clust.cgi?ACC=";
+gene_url = "http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?db=gene&cmd=Retrieve&dopt=Graphics&list_uids=";
+genesymbol_url = "http://www.ncbi.nlm.nih.gov/gquery/?term=";
+flybase_url = "http://flybase.bio.indiana.edu/.bin/fbgenq.html?";
+mirnamap_url="http://mirnamap.mbc.nctu.edu.tw/php/search_kw.php?choice=miRNA&species=";
+snp_url = "http://www.ncbi.nlm.nih.gov/SNP/snp_ref.cgi?rs=";
+pubmed_url_pre = "http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?CMD=Search&DB=PubMed&term=%22";
+pubmed_url_or = "%22+OR+%22";
+pubmed_url_sur = "%22";
+entrez_url_pre = "http://www.ncbi.nlm.nih.gov/gquery/gquery.fcgi?term=%22";
+entrez_url_or = "%22+OR+%22";
+entrez_url_sur = "%22";
+kegg_gene_url = "http://www.genome.ad.jp/dbget-bin/www_bget?";
+gostat_url = "http://gostat.wehi.edu.au/cgi-bin/goStat.pl";
+ontoexpress_url = "http://vortex.cs.wayne.edu/ontoexpress/";
+aceview_url = "http://www.ncbi.nlm.nih.gov/ieb/research/acembly/av.cgi?exdb=AceView&db=36a&term=";
+ 
+td_80_tag = "\!n <td bgcolor=\!"#C0C0C0\!" width=\!"80\!" align=\!"center\!"> <b>";
+td_200_tag = "\!n <td bgcolor=\!"#C0C0C0\!" width=\!"200\!" align=\!"center\!"><b>";
+td_close_tag = "</b> </td>";
+td_80_nobg_tag = "\!n <td width=\!"80\!" align=\!"center\!">";
+td_200_nobg_tag = "\!n <td width=\!"200\!" align=\!"center\!">";
+td_close_nobg_tag = "</td>";
+tr_open_tag = "<tr>";
+tr_close_tag = "</tr>";
+href_open_tag = "<a href=\!"";
+href_target = "\!" target=\!"_blank\!">";
+href_close_tag = "</a>";
+unigene_title = "UniGene";
+pubmed_title = "PubMed";
+entrez_title = "Entrez Cross";
+kegg_title = "KEGG Gene";
+dbsnp_title = "dbSNP";
+ 
+aceview_expr = expr(
+if(!isEmpty(adata1), 
+current Data Table(adata1);
+);
+   nsel = 0;
+   For Each Row( If (Selected(), (
+      selRow = Row();
+      url = aceview_url || :Correct Accession number[selrow];
+      web(url);wait(5);nsel++;current Data Table(adata1);
+   )););
+   if (nsel==0,New Window("JMP Message",showmenu(0),showtoolbars(0),
+      tb = TextBox("You must first select one more points in the graphs or rows in the tables."),
+      tb << Font Color(3)
+   ));
+);
+ 
+genbank_expr = expr(
+if(!isEmpty(adata1), 
+current Data Table(adata1);
+);
+   nsel = 0;
+   For Each Row( If (Selected(), (
+      selRow = Row();
+      url = genbank_url || :Correct Accession number[selrow];
+      web(url);wait(5);nsel++;current Data Table(adata1);
+   )););
+   if (nsel==0,New Window("JMP Message",showmenu(0),showtoolbars(0),
+      tb = TextBox("You must first select one more points in the graphs or rows in the tables."),
+      tb << Font Color(3)
+   ));
+);
+ 
+unigene_expr = expr(
+if(!isEmpty(adata1), 
+current Data Table(adata1);
+);
+   nsel = 0;
+   For Each Row( If (Selected(), (
+      selRow = Row();
+      url = unigene_url || :Correct Accession number[selrow];
+      web(url);wait(5);nsel++;current Data Table(adata1);
+   )););
+   if (nsel==0,New Window("JMP Message",showmenu(0),showtoolbars(0),
+      tb = TextBox("You must first select one more points in the graphs or rows in the tables."),
+      tb << Font Color(3)
+   ));
+);
+ 
+flyBaseSearch_expr = expr(
+if(!isEmpty(adata1), 
+current Data Table(adata1);
+);
+   nsel = 0;
+   For Each Row( If (Selected(), (
+      selRow = Row();
+      url = flybase_url || :Correct Accession number[selrow];
+      web(url);wait(7);nsel++;current Data Table(adata1);
+   )););
+   if (nsel==0,New Window("JMP Message",showmenu(0),showtoolbars(0),
+      tb = TextBox("You must first select one more points in the graphs or rows in the tables."),
+      tb << Font Color(3)
+   ));
+);
+ 
+OE_expr = expr(
+// --------------------------------------------------------------
+// Open web browser,
+// pre-set selected data table, column and path
+// for creating and saving the query file.
+// --------------------------------------------------------------
+if(!isEmpty(adata1), 
+current Data Table(adata1);
+);
+cdt = current data table();
+col = char(expr( Correct Accession number ));
+//cols = cdt<<Get Column Names(String);
+oe_filepath = path || "id_list_for_OntoExpress.txt";
+ 
+// ---------------------------------------------------------------
+// Display a dialog to let user reset column and path
+// for creating and saving the query file.
+// ---------------------------------------------------------------
+result=dialog( title(" Message"),
+vlist(" ", "  A query file is required for searching with Onto-Express. Enter a location to save the query file. The directory must already exist.  ",
+"        ",
+" ", " ", line up(2,
+" The query file path:", oe_filepath=Edit Text(oe_filepath),
+" ", " ", " The Gene Identifier column:", col=Edit Text(col)),
+" ", " ", HList("                                                                      ", button("OK"), button("Cancel"))));
+oe_filepath = result["oe_filepath"];
+col = result["col"];
+ 
+// ----------------------------------------------------------------------
+// Create and save subset data table from selected rows and column.
+// The subset data table will not be created if no row has been selected.
+// ----------------------------------------------------------------------
+current Data Table(adata1);
+if ( nrow(currentDataTable()<<getSelectedRows)>0,
+Query = cdt << Subset(Output Table("queryFile"), Linked, Selected rows, columns(eval(col))),
+dialog( title(" Warning"), vlist( " ", " No rows have been selected.",
+" ", " The query file was not generated.", " ", " ",
+HList("              ", button("OK")))););
+try(Query << Save (eval(oe_filepath), Preferences(Export Settings(Export Table Headers(0)))));
+if ( nrow(currentDataTable()<<getSelectedRows)>0,
+dialog( title(" Message"), vlist("The query file has been saved as " || eval(oe_filepath),
+ " ", "Plese upload your query to the Onto-Expression web site."));
+web(ontoexpress_url); wait(3));
+);
+ 
+gostat_expr = expr(
+if(!isEmpty(adata1), 
+current Data Table(adata1);
+);
+cdt = current data table();
+if ( nrow(currentDataTable()<<getSelectedRows)>0,
+  web(gostat_url); wait(3);
+  col = char(expr( Correct Accession number ));
+  //cols = cdt<<Get Column Names(String);
+  go_filepath = path || "id_list_for_gostat.txt";
+ 
+  result=dialog( title(" Message"),
+  vlist(" ", "  A list of gene identifiers is required for searching with GOStat. Enter a location to save it as a text file. The directory must already exist.  ",
+  "        ",
+  " ", " ", line up(2,
+  " The text file path:", go_filepath=Edit Text(go_filepath),
+  " ", " ", " The Gene Identifier column:", col=Edit Text(col)),
+  " ", " ", HList("                                                                      ", button("OK"), button("Cancel"))));
+  go_filepath = result["go_filepath"];
+  col = result["col"];
+ 
+if(!isEmpty(adata1), 
+current Data Table(adata1);
+);
+  Query = cdt << Subset(Output Table("queryFile"), Linked, Selected rows, columns(eval(col)));
+  Query << Save (eval(go_filepath), Preferences(Export Settings(Export Table Headers(0))));
+  cdt<<clear select;
+,
+  dialog( title(" Warning"), vlist( " ", " No rows have been selected.",
+  " ", " The query file will not be generated.", " ",
+  HList("              ", button("OK"))));
+);
+);
+ 
+pubmed_expr = expr(
+if(!isEmpty(adata1), 
+current Data Table(adata1);
+);
+   nsel = 0;
+   For Each Row( If ( Selected(), (
+      selRow = Row();
+      url = pubmed_url_pre || :Gene[selrow] || pubmed_url_or || :Function[selrow] || pubmed_url_sur;
+      web(url);wait(5);nsel++;current Data Table(adata1);
+   )););
+   if (nsel==0,New Window("JMP Message",showmenu(0),showtoolbars(0),
+      tb = TextBox("You must first select one more points in the graphs or rows in the tables."),
+      tb << Font Color(3)
+   ));
+);
+ 
+entrez_expr = expr(
+if(!isEmpty(adata1), 
+current Data Table(adata1);
+);
+   nsel = 0;
+   For Each Row( If ( Selected(), (
+      selRow = Row();
+      url = entrez_url_pre || :Gene[selrow] || entrez_url_or || :Function[selrow] || entrez_url_sur;
+      web(url);wait(5);nsel++;current Data Table(adata1);
+   )););
+   if (nsel==0,New Window("JMP Message",showmenu(0),showtoolbars(0),
+      tb = TextBox("You must first select one more points in the graphs or rows in the tables."),
+      tb << Font Color(3)
+   ));
+);
+ 
+summary_expr = expr(
+if(!isEmpty(adata1), 
+current Data Table(adata1);
+);
+text1="<html><head><meta http-equiv=\!"content-type\!" content=\!"text/html; charset=UTF-8\!"><title>Summary Page</title></head><body><table align=\!"center\!" width=\!"95%\!"> <tr><td><h2 align=\!"center\!">Gene Annotation Summary</h2></td>";
+text1=text1 || "</tr></table> <table align=\!"center\!" border=\!"1\!" width=\!"95%\!" cellspacing=\!"1\!" cellpadding=\!"0\!"> <tr>";
+col = char(expr( ID ));
+text1= text1 || td_80_tag || col || td_close_tag;
+text1= text1 || td_80_tag || "GenBank" || td_close_tag;
+text1= text1 || td_80_tag || "UniGene" || td_close_tag;
+col_symbol = char(expr( Gene ));
+col_desc = char(expr( Function ));
+text1= text1 || td_80_tag || col_symbol || td_close_tag;
+text1= text1 || td_200_tag || col_desc || td_close_tag;
+text1= text1 || td_80_tag || pubmed_title || td_close_tag;
+text1= text1 || td_80_tag || entrez_title || td_close_tag;
+text2 = " ";
+For Each Row( If ( Selected(), (
+selRow = Row();
+text= tr_open_tag || td_80_nobg_tag || char(:ID[selrow])|| td_close_nobg_tag;
+url0 = href_open_tag || genbank_url || :Correct Accession number[selrow] || href_target || :Correct Accession number[selrow] || href_close_tag;
+url1 = href_open_tag || unigene_url || :Correct Accession number[selrow] || href_target || unigene_title || href_close_tag;
+text= text || td_80_nobg_tag || url0 || td_close_nobg_tag; 
+text= text || td_80_nobg_tag || url1 || td_close_nobg_tag; 
+url2 = href_open_tag || genesymbol_url || :Gene[selrow] || href_target || :Gene[selrow] || href_close_tag;
+url3 = href_open_tag || pubmed_url_pre || :Gene[selrow] || pubmed_url_or || :Function[selrow] || pubmed_url_sur || href_target || pubmed_title || href_close_tag;
+url4 = href_open_tag || entrez_url_pre || :Gene[selrow] || entrez_url_or || :Function[selrow] || entrez_url_sur || href_target || entrez_title || href_close_tag;
+text= text || td_80_nobg_tag || url2 || td_close_nobg_tag; 
+text= text || td_200_nobg_tag || :Function[selrow] || td_close_nobg_tag;
+text= text || td_80_nobg_tag || url3 || td_close_nobg_tag; 
+text= text || td_80_nobg_tag || url4 || td_close_nobg_tag; 
+text2 = text2 || text || tr_close_tag;
+)););
+text3="</tr> </table> </body> </html>";
+db=Text Box(text1 || text2 || text3);
+db<<Save Text(summary_url);
+web(summary_url);
+);
+ 
+lsproduct = "Genomics";
+origbyvars = "_Row";
+byvars = "_Row";
+lastbyvar = "_Row";
+bvlist = {column("_Row")};
+belist = { "_Row" };
+bvmatch = "column(\!"_Row\!")==column(\!"_Row\!")";
+alreadystacked = 0;
+responsevar = "";
+responsevar0 = "";
+inpath = "C:\Users\sedge4\Documents\stressed larvae JMP\salinity\Probe analysis\ANOVA\ANOVA trt and col\";
+indata = "probe_norm_larvae_sal";
+expinpath = "C:\Users\sedge4\Documents\stressed larvae JMP\salinity\Probe analysis\ANOVA\ANOVA trt and col\";
+expindata = "past_fake_array_nov29_exp";
+annoindata = "C:\Users\sedge4\Documents\stressed larvae JMP\annotation files\clean averaged probes annot\agilent_probe_annot_clean_12_11_.sas7bdat";
+annopath = "C:\Users\sedge4\Documents\stressed larvae JMP\annotation files\clean averaged probes annot\";
+annodata = "agilent_probe_annot_clean_12_11_";
+annomergevars = "ID";
+basemergevars = "ID";
+annolabel = "";
+annochrvar = "";
+annoposvar = "";
+chrvar = "";
+chrvar0 = "";
+chrvalues = {};
+posvar = "";
+posvar0 = "";
+jg:trackfolder = "";
+jg:trackfiles = "";
+jg:trackadd = 1000;
+plot_tracks = 0;
+outpath = "C:\Users\sedge4\Documents\stressed larvae JMP\salinity\Probe analysis\ANOVA\ANOVA trt and col\";
+jg:serveroutpath = "C:\Users\sedge4\Documents\stressed larvae JMP\salinity\Probe analysis\ANOVA\ANOVA trt and col\";
+jg:clientoutpath = "C:\Users\sedge4\Documents\stressed larvae JMP\salinity\Probe analysis\ANOVA\ANOVA trt and col\";
+macropath = "C:\Program Files\SASHome\x86\JMP\10\LifeSciences\MacroLib";
+processname = "ANOVA";
+ProcUsed = "MIXED";
+DataDistribution = "Normal";
+ModelStatement="\[class trt col  ; model response = trt col / ddfm=res  outp=StdRes(keep=_Row ID Response Resid) Residual ;  lsmeans trt col / diff ;]\";
+classvars0 = {Column("trt"), Column("col")};
+classvars = {Column("trt"), Column("col")};
+effects = { trt ,  col };
+fixedeffects = { "trt" ,  "col" };
+fixedeffectstrunc = { "trt" ,  "col" };
+inclassvars = "";
+timevar = "";
+trtname = "";
+censorvar = "";
+censorvalues = "";
+nstrata = 0;
+basesubjectvar = "";
+baselinevar = "";
+baselinevalue = "";
+volcanotab =1;
+clustertab =2;
+ppcatab =3;
+Here:RefreshTabExpr = Expr(
+   program = "
+	 tabfound=trtb << Index of Tab(TabButtonList["||char(eval(tabloc))||"]);
+		if(tabfound >0,
+			trtb << Delete(tabfound);
+		);
+	 tabfound=trtb << Index of Tab(TabButtonList["||char(eval(tabloc))||"]);
+		if(tabfound == 0,  
+				if (nSig > 0,
+         trtb << Append( TabButtonList["||char(eval(tabloc))||"], Eval(TabCodeList["||char(eval(tabloc))||"]) );
+				if(!isEmpty(Here:TabAfterCodeList),
+               Eval(TabAfterCodelist["||char(eval(tabloc))||"])
+			);
+,
+		if (tabVolcano >0,
+         trtb << Append( TabButtonList["||char(eval(tabloc))||"], Eval(TabCodeList["||char(eval(tabloc))||"]) );
+				if(!isEmpty(Here:TabAfterCodeList),
+               Eval(TabAfterCodelist["||char(eval(tabloc))||"])
+			);
+);
+);// end of nSig
+			, //else - only allow 1 tab open per button
+				trtb << Set Selected(tabfound) 
+);";
+		program = eval(parse(program));	
+	);
+lcomp = 0;
+VennFlag = 1;
+foldfilter = 1;
+include("$LS_HOME\JSLFiles\Mixed Model Drill Down Expressions.JSL");
+Here:ActionButtonDesc = {"Search the Web: Select Points or Rows then Click a Button"};
+Here:ActionButtonsperRow = {0};
+if(isEmpty(ActionButtonList) | NItems(ActionButtonList)==0,
+   ActionButtonList = {{"IPA Upload","UCSC Genome Browser"}};
+   ActionCodeList = {{ipa_expr, ucsc_expr}};
+   ArryIndex = 1;
+   , //else
+   // show(ActionButtonList,ArryIndex);
+   InsertInto(ActionButtonList[ArryIndex],{"IPA Upload","UCSC Genome Browser"});
+   InsertInto(ActionCodeList[ArryIndex],{ipa_expr, ucsc_expr});
+   ArryIndex = NItems(ActionButtonList);
+);
+InsertInto(ActionButtonList[ArryIndex],{"Annotation Summary"});
+InsertInto(ActionCodeList[ArryIndex],{summary_expr});
+InsertInto(ActionButtonList[ArryIndex],{"GO Stat","Onto-Express"});
+InsertInto(ActionCodeList[ArryIndex],{gostat_expr, OE_expr});
+if(isEmpty(Here:ActionButtonList),
+   Here:ActionButtonList = {{"GenBank-Nucleotide","UniGene Database","AceView Database"}};
+   Here:ActionCodeList = {{genbank_expr, unigene_expr, aceview_expr}};
+   ArryIndex = 1;
+, //else
+   InsertInto(Here:ActionButtonList[ArryIndex],{"GenBank-Nucleotide","UniGene Database","AceView Database"});
+   InsertInto(Here:ActionCodeList[ArryIndex],{genbank_expr, unigene_expr, aceview_expr});
+   ArryIndex = NItems(ActionButtonList);
+);
+InsertInto(ActionButtonList[ArryIndex],{"PubMed","Entrez Cross"});
+InsertInto(ActionCodeList[ArryIndex],{pubmed_expr,entrez_expr});
+InsertInto(Here:ActionButtonDesc ,"Drill Down: Select Points or Rows then Click a Button");
+InsertInto(Here:ActionButtonsperRow ,0);
+include("$LS_HOME\JSLFiles\Mixed Model Drill Down Buttons.JSL");
+InsertInto(Here:ActionButtonDesc ,"Launch Process: Select Points or Rows then Click a Button");
+InsertInto(Here:ActionButtonsperRow ,0);
+include("$LS_HOME\JSLFiles\Mixed Model Drill Down Launch.JSL");
+InsertInto(Here:ActionButtonDesc ,"Determine Significance");
+InsertInto(Here:ActionButtonsperRow,1);
+if(isEmpty(Here:ActionButtonList),
+if (foldfilter,
+Here:ActionButtonList = {{"Create Subset with Mean Difference and P-value Criteria"}};
+Here:ActionCodeList = {{fpub}};
+   ArryIndex = 1;
+   InsertInto(ActionButtonList[ArryIndex],{"Refresh"});
+   InsertInto(ActionCodeList[ArryIndex],{getcuttoff});
+   ArryIndex = NItems(ActionButtonList);
+,
+   Here:ActionButtonList = {{"Refresh"}};
+   Here:ActionCodeList = {{getcuttoff}};
+   ArryIndex = 1;
+);
+   , // else
+if (VennFlag,
+   InsertInto(ActionButtonList,{{"Venn Diagram"}});
+   InsertInto(ActionCodeList,{{venn}});
+   ArryIndex = NItems(ActionButtonList);
+if (foldfilter,
+   InsertInto(ActionButtonList[ArryIndex],{"Create Subset with Mean Difference and P-value Criteria"});
+   InsertInto(ActionCodeList[ArryIndex],{fpub});
+   ArryIndex = NItems(ActionButtonList);
+);
+   InsertInto(ActionButtonList[ArryIndex],{"Refresh"});
+   InsertInto(ActionCodeList[ArryIndex],{getcuttoff});
+   ArryIndex = NItems(ActionButtonList);
+,
+   InsertInto(ActionButtonList,{{"Refresh"}});
+   InsertInto(ActionCodeList,{{getcuttoff}});
+   ArryIndex = NItems(ActionButtonList);
+);
+);
+getcuttoff = expr(
+jg:cutoff = Num(Eval(Here:vteb)<<GetText);
+            if (jg:cutoff>=0,
+	//	Here:DataList = {};
+	//	Here:TabButtonList = {};
+	//	Here:TabCodeList = {};
+	//	Here:TabAfterCodeList = {};
+	//	Here:TabOpenList = {};
+					Here:adata1<<clear row states;
+             sigrun;
+    tabloc=Loc(TabButtonList, "Results");
+	if( NRow(tabloc) != 0,
+		tabloc1 =tabloc[1];
+		tabloc =tabloc1;
+		tabVolcano =1;
+		RefreshTabExpr;
+		);
+   tabloc=Loc(TabButtonList, "Chromosome Position Plots");
+if( NRow(tabloc) != 0,
+		tabloc1 =tabloc[1];
+		tabloc =tabloc1;
+		tabVolcano =0;
+		RefreshTabExpr;
+		);
+,
+               ActionButtonMessage=NewWindow("Action Buttons Message",
+                  VListBox(
+                     tb=TextBox("Please specify a nonnegative (>=0) cutoff."),
+                     TextBox(" "),
+                     ButtonBox("OK",ActionButtonMessage<<CloseWindow);
+                  );
+               );
+               tb << Font Color(3);
+               tb << Set Font Size(11);
+               tb << Set Wrap(1000)
+            );
+         );
+ 
+ 
+jg:ncall_sigrun = 0;
+/*--expression to rerun from Action Buttons---*/
+sigrun = expr(
+if (isempty(ncall_sigrun),jg:ncall_sigrun=0;);
+jg:ncall_sigrun++;
+if(jg:ncall_sigrun==1,jg:ncall_string="",jg:ncall_string=" "||char(jg:ncall_sigrun));
+/*---Corresponding p-value cutoff---*/
+jg:pcutoff = 10^(-jg:cutoff);
+cutoffAlias = jg:cutoff;
+pcutoffAlias = jg:pcutoff;
+current data table(Here:adata1);
+Here:adata1<< Clear Column Selection;
+_colnames_ = Char(Here:adata1<<Get Column Names());
+If(!Contains(_colnames_,"Sig Index for Diff of trt = (C)-(L)"),
+  Here:adata1 << NewColumn(  "Sig Index for Diff of trt = (C)-(L)",  Nominal, Width(1),    <<Set Property("SAS Name",Sig_Index_for_Diff1),
+   <<Set Property("SAS Label",:Name("Sig Index for Diff of trt = (C)-(L)"))));
+Eval(Substitute(Expr(Column("Sig Index for Diff of trt = (C)-(L)")<<set formula( if (Is Missing(:Name(" -log10(p-value) for Diff of trt = (C)-(L)"))==1,.,
+ :Name("-log10(p-value) for Diff of trt = (C)-(L)") > _cutoffAlias, 1,0) ))
+, Expr(_cutoffAlias), cutoffAlias));
+Column("Sig Index for Diff of trt = (C)-(L)")<<Eval Formula;
+If(!Contains(_colnames_,"Sig Index for Diff of trt = (C)-(SL)"),
+  Here:adata1 << NewColumn(  "Sig Index for Diff of trt = (C)-(SL)",  Nominal, Width(1),    <<Set Property("SAS Name",Sig_Index_for_Diff2),
+   <<Set Property("SAS Label",:Name("Sig Index for Diff of trt = (C)-(SL)"))));
+Eval(Substitute(Expr(Column("Sig Index for Diff of trt = (C)-(SL)")<<set formula( if (Is Missing(:Name(" -log10(p-value) for Diff of trt = (C)-(SL)"))==1,.,
+ :Name("-log10(p-value) for Diff of trt = (C)-(SL)") > _cutoffAlias, 1,0) ))
+, Expr(_cutoffAlias), cutoffAlias));
+Column("Sig Index for Diff of trt = (C)-(SL)")<<Eval Formula;
+If(!Contains(_colnames_,"Sig Index for Diff of trt = (L)-(SL)"),
+  Here:adata1 << NewColumn(  "Sig Index for Diff of trt = (L)-(SL)",  Nominal, Width(1),    <<Set Property("SAS Name",Sig_Index_for_Diff3),
+   <<Set Property("SAS Label",:Name("Sig Index for Diff of trt = (L)-(SL)"))));
+Eval(Substitute(Expr(Column("Sig Index for Diff of trt = (L)-(SL)")<<set formula( if (Is Missing(:Name(" -log10(p-value) for Diff of trt = (L)-(SL)"))==1,.,
+ :Name("-log10(p-value) for Diff of trt = (L)-(SL)") > _cutoffAlias, 1,0) ))
+, Expr(_cutoffAlias), cutoffAlias));
+Column("Sig Index for Diff of trt = (L)-(SL)")<<Eval Formula;
+If(!Contains(_colnames_,"Sig Index for Diff of col = (A)-(B)"),
+  Here:adata1 << NewColumn(  "Sig Index for Diff of col = (A)-(B)",  Nominal, Width(1),    <<Set Property("SAS Name",Sig_Index_for_Diff4),
+   <<Set Property("SAS Label",:Name("Sig Index for Diff of col = (A)-(B)"))));
+Eval(Substitute(Expr(Column("Sig Index for Diff of col = (A)-(B)")<<set formula( if (Is Missing(:Name(" -log10(p-value) for Diff of col = (A)-(B)"))==1,.,
+ :Name("-log10(p-value) for Diff of col = (A)-(B)") > _cutoffAlias, 1,0) ))
+, Expr(_cutoffAlias), cutoffAlias));
+Column("Sig Index for Diff of col = (A)-(B)")<<Eval Formula;
+If(!Contains(_colnames_,"Sig Index for Diff of col = (A)-(C)"),
+  Here:adata1 << NewColumn(  "Sig Index for Diff of col = (A)-(C)",  Nominal, Width(1),    <<Set Property("SAS Name",Sig_Index_for_Diff5),
+   <<Set Property("SAS Label",:Name("Sig Index for Diff of col = (A)-(C)"))));
+Eval(Substitute(Expr(Column("Sig Index for Diff of col = (A)-(C)")<<set formula( if (Is Missing(:Name(" -log10(p-value) for Diff of col = (A)-(C)"))==1,.,
+ :Name("-log10(p-value) for Diff of col = (A)-(C)") > _cutoffAlias, 1,0) ))
+, Expr(_cutoffAlias), cutoffAlias));
+Column("Sig Index for Diff of col = (A)-(C)")<<Eval Formula;
+If(!Contains(_colnames_,"Sig Index for Diff of col = (B)-(C)"),
+  Here:adata1 << NewColumn(  "Sig Index for Diff of col = (B)-(C)",  Nominal, Width(1),    <<Set Property("SAS Name",Sig_Index_for_Diff6),
+   <<Set Property("SAS Label",:Name("Sig Index for Diff of col = (B)-(C)"))));
+Eval(Substitute(Expr(Column("Sig Index for Diff of col = (B)-(C)")<<set formula( if (Is Missing(:Name(" -log10(p-value) for Diff of col = (B)-(C)"))==1,.,
+ :Name("-log10(p-value) for Diff of col = (B)-(C)") > _cutoffAlias, 1,0) ))
+, Expr(_cutoffAlias), cutoffAlias));
+Column("Sig Index for Diff of col = (B)-(C)")<<Eval Formula;
+If(!Contains(_colnames_, "Sum Sig Index for Diffs"),
+	Here:adata1 << NewColumn("Sum Sig Index for Diffs");
+);
+Eval(Substitute(Expr(Column("Sum Sig Index for Diffs")<<set formula(Sum(
+   if (Is Missing(:Name("-log10(p-value) for Diff of trt = (C)-(L)"))==1,.,
+      :Name("-log10(p-value) for Diff of trt = (C)-(L)") >  _cutoffAlias, 1,0)
+,
+   if (Is Missing(:Name("-log10(p-value) for Diff of trt = (C)-(SL)"))==1,.,
+      :Name("-log10(p-value) for Diff of trt = (C)-(SL)") >  _cutoffAlias, 1,0)
+,
+   if (Is Missing(:Name("-log10(p-value) for Diff of trt = (L)-(SL)"))==1,.,
+      :Name("-log10(p-value) for Diff of trt = (L)-(SL)") >  _cutoffAlias, 1,0)
+,
+   if (Is Missing(:Name("-log10(p-value) for Diff of col = (A)-(B)"))==1,.,
+      :Name("-log10(p-value) for Diff of col = (A)-(B)") >  _cutoffAlias, 1,0)
+,
+   if (Is Missing(:Name("-log10(p-value) for Diff of col = (A)-(C)"))==1,.,
+      :Name("-log10(p-value) for Diff of col = (A)-(C)") >  _cutoffAlias, 1,0)
+,
+   if (Is Missing(:Name("-log10(p-value) for Diff of col = (B)-(C)"))==1,.,
+      :Name("-log10(p-value) for Diff of col = (B)-(C)") >  _cutoffAlias, 1,0)
+ 
+)))
+, Expr(_cutoffAlias), cutoffAlias));
+Column("Sum Sig Index for Diffs")<<Eval Formula;
+If(!Contains(_colnames_, "Avg Sig Index for Diffs"),
+	Here:adata1 << NewColumn("Avg Sig Index for Diffs");
+);
+Eval(Substitute(Expr(Column("Avg Sig Index for Diffs")<<set formula(Mean(
+   if (Is Missing(:Name("-log10(p-value) for Diff of trt = (C)-(L)"))==1,.,
+      :Name("-log10(p-value) for Diff of trt = (C)-(L)") >   _cutoffAlias, 1,0)
+,
+   if (Is Missing(:Name("-log10(p-value) for Diff of trt = (C)-(SL)"))==1,.,
+      :Name("-log10(p-value) for Diff of trt = (C)-(SL)") >   _cutoffAlias, 1,0)
+,
+   if (Is Missing(:Name("-log10(p-value) for Diff of trt = (L)-(SL)"))==1,.,
+      :Name("-log10(p-value) for Diff of trt = (L)-(SL)") >   _cutoffAlias, 1,0)
+,
+   if (Is Missing(:Name("-log10(p-value) for Diff of col = (A)-(B)"))==1,.,
+      :Name("-log10(p-value) for Diff of col = (A)-(B)") >   _cutoffAlias, 1,0)
+,
+   if (Is Missing(:Name("-log10(p-value) for Diff of col = (A)-(C)"))==1,.,
+      :Name("-log10(p-value) for Diff of col = (A)-(C)") >   _cutoffAlias, 1,0)
+,
+   if (Is Missing(:Name("-log10(p-value) for Diff of col = (B)-(C)"))==1,.,
+      :Name("-log10(p-value) for Diff of col = (B)-(C)") >   _cutoffAlias, 1,0)
+ 
+)) )
+, Expr(_cutoffAlias), cutoffAlias));
+Column("Avg Sig Index for Diffs")<<Eval Formula;
+nSig = 0;
+for each row( Selected( Rowstate() )=((
+		:Name("Sum Sig Index for Diffs") > 0 
+      )
+      );
+      nSig = nSig + Selected(Rowstate());
+);
+ 
+   /*---create sig diffs table and graphs only if there is at least one significant gene---*/
+   if (nSig==0,nw = New Window("JMP Life Sciences Message",
+    TextBox("NOTE: No significant differences were found at cutoff = " || char(jg:cutoff) || ".  " ||
+       "You can change the cutoff in the Action Buttons window " ||
+       "and recreate the plots, or rerun the entire analysis " ||
+       "from the dialog after changing the model or settings." ||
+       "  The output data sets are not updated."),
+    );
+    nw << SetWindowIcon("$LS_HOME/Documentation/Icons/JMPClinicalApp.ico");
+    , // else
+   Here:sigdata = Here:adata1<<Subset(output table name( "Significant rows with at least one -log10(p) >" || char(jg:cutoff) ), invisible,Linked);
+if (length(outdsname) >28,
+   outdsname = substr(outdsname,1,28);
+);
+   //show(outdsname);
+   current data table(Here:sigdata);
+   current data table() <<save(jg:clientoutpath||outdsname||"_sig.sas7bdat");
+   current data table(Here:adata1);
+   current data table() <<save(jg:clientoutpath||outdsname||".sas7bdat");
+   Here:adata1<<clear select;
+   current data table(Here:sigdata);
+);
+ 
+current data table(Here:adata1);
+Here:vp=Function({}, {default local},
+   If(IsEmpty(Here:adata1),
+Here:adata1 = open("C:\Users\sedge4\Documents\stressed larvae JMP\salinity\Probe analysis\ANOVA\ANOVA trt and col\probe_norm_larvae_sal_amr.sas7bdat",invisible);
+);
+current data table(Here:adata1);
+   Here:voldiff=VListBox(
+   HListBox(
+      Here:dbiv1 = Bivariate(X( :Name("Diff of trt = (C)-(L)")),
+         Y( :Name("-log10(p-value) for Diff of trt = (C)-(L)")),
+         Title("Diff of trt = (C)-(L)"),
+         SendToReport(
+            Dispatch(
+               {},
+               "2",
+               ScaleBox,
+               {Scale( Linear ), Format( "Best" ),
+               Min(-0.2),Max(5.2),Inc(0.5),Minor Ticks(0),
+               Add Ref Line( jg:cutoff, Dashed, "Red" )}
+            )
+         )
+      )
+   ),
+   HListBox(
+      Here:dbiv2 = Bivariate(X( :Name("Diff of trt = (C)-(SL)")),
+         Y( :Name("-log10(p-value) for Diff of trt = (C)-(SL)")),
+         Title("Diff of trt = (C)-(SL)"),
+         SendToReport(
+            Dispatch(
+               {},
+               "2",
+               ScaleBox,
+               {Scale( Linear ), Format( "Best" ),
+               Min(-0.2),Max(5.2),Inc(0.5),Minor Ticks(0),
+               Add Ref Line( jg:cutoff, Dashed, "Red" )}
+            )
+         )
+      )
+   ),
+   HListBox(
+      Here:dbiv3 = Bivariate(X( :Name("Diff of trt = (L)-(SL)")),
+         Y( :Name("-log10(p-value) for Diff of trt = (L)-(SL)")),
+         Title("Diff of trt = (L)-(SL)"),
+         SendToReport(
+            Dispatch(
+               {},
+               "2",
+               ScaleBox,
+               {Scale( Linear ), Format( "Best" ),
+               Min(-0.2),Max(5.2),Inc(0.5),Minor Ticks(0),
+               Add Ref Line( jg:cutoff, Dashed, "Red" )}
+            )
+         )
+      )
+   ),
+   HListBox(
+      Here:dbiv4 = Bivariate(X( :Name("Diff of col = (A)-(B)")),
+         Y( :Name("-log10(p-value) for Diff of col = (A)-(B)")),
+         Title("Diff of col = (A)-(B)"),
+         SendToReport(
+            Dispatch(
+               {},
+               "2",
+               ScaleBox,
+               {Scale( Linear ), Format( "Best" ),
+               Min(-0.2),Max(5.2),Inc(0.5),Minor Ticks(0),
+               Add Ref Line( jg:cutoff, Dashed, "Red" )}
+            )
+         )
+      )
+   ),
+   HListBox(
+      Here:dbiv5 = Bivariate(X( :Name("Diff of col = (A)-(C)")),
+         Y( :Name("-log10(p-value) for Diff of col = (A)-(C)")),
+         Title("Diff of col = (A)-(C)"),
+         SendToReport(
+            Dispatch(
+               {},
+               "2",
+               ScaleBox,
+               {Scale( Linear ), Format( "Best" ),
+               Min(-0.2),Max(5.2),Inc(0.5),Minor Ticks(0),
+               Add Ref Line( jg:cutoff, Dashed, "Red" )}
+            )
+         )
+      )
+   ),
+   HListBox(
+      Here:dbiv6 = Bivariate(X( :Name("Diff of col = (B)-(C)")),
+         Y( :Name("-log10(p-value) for Diff of col = (B)-(C)")),
+         Title("Diff of col = (B)-(C)"),
+         SendToReport(
+            Dispatch(
+               {},
+               "2",
+               ScaleBox,
+               {Scale( Linear ), Format( "Best" ),
+               Min(-0.2),Max(5.2),Inc(0.5),Minor Ticks(0),
+               Add Ref Line( jg:cutoff, Dashed, "Red" )}
+            )
+         )
+      )
+   )
+   );
+   Here:tt=VListBox(
+   HListBox(TextBox(" Frame Size for Graphs Below"),
+  volcanoevi=EvalInsert("\[
+      vframeSizeSlider = SliderBox(num(100),num(700),vfsize,
+         Here:rdbiv1[framebox(1)]<<FrameSize(vfsize,0.75*vfsize);
+         Here:rdbiv2[framebox(1)]<<FrameSize(vfsize,0.75*vfsize);
+         Here:rdbiv3[framebox(1)]<<FrameSize(vfsize,0.75*vfsize);
+         Here:rdbiv4[framebox(1)]<<FrameSize(vfsize,0.75*vfsize);
+         Here:rdbiv5[framebox(1)]<<FrameSize(vfsize,0.75*vfsize);
+         Here:rdbiv6[framebox(1)]<<FrameSize(vfsize,0.75*vfsize);
+      )
+  ]\"); 
+  volevi=EvalInsert("\[
+      Here:rdbiv1=Here:dbiv1<<report;
+      Here:rdbiv1[framebox(1)]<<FrameSize(vfsize,0.75*vfsize);
+      Here:rdbiv2=Here:dbiv2<<report;
+      Here:rdbiv2[framebox(1)]<<FrameSize(vfsize,0.75*vfsize);
+      Here:rdbiv3=Here:dbiv3<<report;
+      Here:rdbiv3[framebox(1)]<<FrameSize(vfsize,0.75*vfsize);
+      Here:rdbiv4=Here:dbiv4<<report;
+      Here:rdbiv4[framebox(1)]<<FrameSize(vfsize,0.75*vfsize);
+      Here:rdbiv5=Here:dbiv5<<report;
+      Here:rdbiv5[framebox(1)]<<FrameSize(vfsize,0.75*vfsize);
+      Here:rdbiv6=Here:dbiv6<<report;
+      Here:rdbiv6[framebox(1)]<<FrameSize(vfsize,0.75*vfsize);
+  ]\"); 
+  Eval(Parse(volevi));
+  Eval(Parse(volcanoevi));
+   ),
+   TextBox(" Horizontal reference line drawn at -log10(p) = " || char(format(jg:cutoff,"Fixed Dec",3))),
+      Here:voldiff;
+));
+Here:combineTabs=Function({}, {default local},
+	Here:vp();
+	);
+InsertInto(DataList,{{"Here:adata1"}});
+InsertInto(TabButtonList, "Results");
+InsertInto(TabCodeList,expr(Here:combineTabs()));
+InsertInto(TabAfterCodeList, " ");
+InsertInto(TabOpenList,1);
+InsertInto(DataList,{{"Here:adata1"}});
+InsertInto(TabButtonList, "Variability Estimates");
+InsertInto(TabCodeList,expr(Here:ve()));
+InsertInto(TabAfterCodeList, " ");
+InsertInto(TabOpenList,0);
+);
+sigrun;
+gselaunchbuttons=Function({},{default local},
+   VListBox(
+			ButtonBox("Gene Set Enrichment",
+				if(host is(Windows),
+					Include(ConvertFilePath("$HOME/JMPG/ProcessLibrary/GeneSetEnrichment.jsl", absolute, windows)),
+					Include( ConvertFilePath("$HOME/JMPG/ProcessLibrary/GeneSetEnrichment.jsl", absolute, POSIX) ));
+	
+				jg:setCurrentParmValue(2,"GeneSetEnrichment", jg:getParmNum("GeneSetEnrichment","InData"),"C:\Users\sedge4\Documents\stressed larvae JMP\salinity\Probe analysis\ANOVA\ANOVA trt and col\probe_norm_larvae_sal_amr.sas7bdat");
+				jg:setCurrentParmValue(2,"GeneSetEnrichment", jg:getParmNum("GeneSetEnrichment","AnnoInData"),"C:\Users\sedge4\Documents\stressed larvae JMP\annotation files\clean averaged probes annot\agilent_probe_annot_clean_12_11_.sas7bdat");
+				jg:GeneSetEnrichment_updateDeps;
+				jg:setCurrentParmValue(2,"GeneSetEnrichment", jg:getParmNum("GeneSetEnrichment","OutPath"),"C:\Users\sedge4\Documents\stressed larvae JMP\salinity\Probe analysis\ANOVA\ANOVA trt and col\");
+			) ,
+	
+   )
+);
+Here:LaunchCode = gselaunchbuttons();
+jg:_sasmessage_=1;
+if(host is(Windows),
+	include( ConvertFilePath(jg:LSpath[1]||"/Generator/DialogHelperFunctions.jsl", absolute, windows) ),
+	include( ConvertFilePath(jg:LSpath[1]||"/Generator/DialogHelperFunctions.jsl", absolute, POSIX) ));
+Here:sasmsgwindow=Function({},{default local},
+Vlistbox(   Here:_tb = TextBox("Process ANOVA " ||
+ "has generated the SAS data set(s) shown below."),
+   TextBox(" "),
+  // Here:uselabelcb = Checkbox("Use SAS labels for JMP column names",<<Set(1,1)),
+   _tb << Set Wrap(400);
+   TextBox(" "),
+   HListBox(
+   Here:tbd=TextBox("Significant differences data from ANOVA"),
+   tbd << Set Wrap(350),
+			ButtonBox("Open",
+          jg:clientoutpath = "C:\Users\sedge4\Documents\stressed larvae JMP\salinity\Probe analysis\ANOVA\ANOVA trt and col\";
+				//if(!isEmpty(Here:uselabelcb),
+				Here:uselabels = 0;
+				//);
+				if(hostis(windows),
+					jg:OpenWithSASNames("C:\Users\sedge4\Documents\stressed larvae JMP\salinity\Probe analysis\ANOVA\ANOVA trt and col\probe_norm_larvae_sal_amr_sig.sas7bdat", 0, "Here:smwdata1");
+					if(!IsEmpty(Here:DataList), InsertInto(DataList,{{"Here:smwdata1"}}));,
+					SASDataSetTextOpen("C:\Users\sedge4\Documents\stressed larvae JMP\salinity\Probe analysis\ANOVA\ANOVA trt and col\probe_norm_larvae_sal_amr_sig.sas7bdat",jg:jmpLSDir[2]||"ProcessResults/",1)
+			)	)
+   ),
+   Here:_teb = TextEditBox("C:\Users\sedge4\Documents\stressed larvae JMP\salinity\Probe analysis\ANOVA\ANOVA trt and col\probe_norm_larvae_sal_amr_sig.sas7bdat"),
+      _teb << Font Color(5),
+   _teb << Set Wrap(1000),
+   TextBox(" ")
+));
+//sasmsgwindow << Set Window Icon("$LS_HOME\Documentation\Icons\SASLogo.bmp");
+Here:APName = "ANOVA";
+Here:FullAPName = "ANOVA";
+Here:StudyName = "GeneticsExample";
+jg:StudyName = "GeneticsExample";
+Here:_oapwsf_ = 1;
+Here:_OpenAPwithSetting_=Function({},{default local},
+ autorunsave = jg:autorun;
+ jg:autorun = 0;
+ include( jg:jmpLSUserDir[2]||"/ProcessLibrary/" || "ANOVA" || ".jsl", << Allow Include File Recursion);
+ jg:setDefaultParmValues(2,"ANOVA");
+ jg:runWithSettings(2, "ANOVA", "C:\Users\sedge4\Documents\stressed larvae JMP\salinity\Probe analysis\ANOVA\ANOVA trt and col\ANOVA__GeneticsExample.sas", 0 );
+ jg:autorun = autorunsave;
+);
+try(Here:thissaslst = LoadTextFile("C:\Users\sedge4\Documents\stressed larvae JMP\salinity\Probe analysis\ANOVA\ANOVA trt and col\ANOVA_1.lst"));
+Here:OpenSASOutputTab = 0;
+Here:LSIndex = 2;
+_OutputFolder = "C:\Users\sedge4\Documents\stressed larvae JMP\salinity\Probe analysis\ANOVA\ANOVA trt and col\";
+Here:nwcounter=1;
+Here:TabWinList = {};
+include(jg:jmpLSDir[1]||"\JSLFiles\TabbedReport.jsl");
+include("$LS_HOME/JSLFiles/Mixed Model Drill Down Recompute.JSL");
